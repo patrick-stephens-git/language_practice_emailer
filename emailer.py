@@ -32,10 +32,10 @@ def emailer(sample_word, sample_translation) -> None:
 
     #####################################
     ## Setup Email Content:
-    email_subject_line: str = "{0}: {1} [{2}]".format(today, sample_word, sample_translation) 
+    email_subject_line: str = f"{today}: {sample_word}" 
     logger.info(f"Email subject line: {email_subject_line}")
-    email_body: str = """
-    -
+    email_body: str = f"""
+    {sample_translation}
     """
     logger.info(f"Email body: {email_body}")
 
