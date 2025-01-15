@@ -1,7 +1,7 @@
 # Language Practice Emailer
 
 ## Overview
-Language Practice Emailer is a Python project designed to help users practice a new language by sending them daily emails with words the user struggles with. The project fetches language content from a Google Sheet file (e.g: https://docs.google.com/spreadsheets/d/1e4xSr0ZxLaeDICGxBgR4zbNmDhrN-Yl7Cy7b5e4lT0w/edit?usp=sharing) and compiles it into a structured email format.
+Language Practice Emailer is a Python project designed to help users practice a new language by sending them emails with words the user struggles with. The project fetches language content from a Google Sheet file (e.g: https://docs.google.com/spreadsheets/d/1e4xSr0ZxLaeDICGxBgR4zbNmDhrN-Yl7Cy7b5e4lT0w/edit?usp=sharing) and compiles it into a structured email format.
 
 ## Installation
 1. Clone the repository:
