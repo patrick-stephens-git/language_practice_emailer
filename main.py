@@ -1,6 +1,6 @@
 from data_prep import get_words
 from emailer import emailer
-from logging_config import setup_logging
+from utils.logging_config import setup_logging
 
 def main() -> None: 
     setup_logging()

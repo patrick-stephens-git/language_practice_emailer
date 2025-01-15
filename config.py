@@ -1,4 +1,8 @@
-from datetime import date
+from dotenv import load_dotenv
+import os
 
-today = date.today() # Get current date
-# print(today)
+load_dotenv('.env')
+sender_email_account: str = os.getenv("EMAIL_ACCOUNT")
+sender_email_password: str = os.getenv("EMAIL_PASSWORD")
+email_recipients: str =  os.getenv("EMAIL_RECIPIENTS")
+sheet_id: str =  os.getenv("SHEET_ID")

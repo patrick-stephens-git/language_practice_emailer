@@ -1,22 +1,17 @@
-from config import today
-from dotenv import load_dotenv
-import os
+from utils.date import today
+from utils.logging_config import setup_logging
+from config import sender_email_account, sender_email_password, email_recipients
 import smtplib
 from email.mime.text import MIMEText
-import logging
 
 def emailer(sample_word, sample_translation) -> None:
     #####################################
     ## Logging:
-    logger = logging.getLogger(__name__)
+    logger = setup_logging()
     
     #####################################
-    ## Setup To & From:
-    load_dotenv('.env')
-    sender_email_account: str = os.getenv("EMAIL_ACCOUNT")
-    sender_email_password: str = os.getenv("EMAIL_PASSWORD")
-    email_recipients: str =  os.getenv("EMAIL_RECIPIENTS")
-    email_recipients: list[str] = email_recipients.split(",") # Convert email_recipients string to a list
+    ## Setup Recipients:
+    recipients: list[str] = email_recipients.split(",") # Convert email_recipients string to a list
 
     #####################################
     ## Check for empty variables; if empty then fail, else continue:
@@ -44,7 +39,7 @@ def emailer(sample_word, sample_translation) -> None:
     message = MIMEText(email_body, "html")
     message["Subject"] = email_subject_line
     message["From"] = sender_email_account
-    message["To"] = ','.join(email_recipients)
+    message["To"] = ','.join(recipients)
 
     #####################################
     ## Authentication:
@@ -54,7 +49,7 @@ def emailer(sample_word, sample_translation) -> None:
     #####################################
     ## Send Email:
     server.sendmail(from_addr = sender_email_account, 
-                    to_addrs = email_recipients, 
+                    to_addrs = recipients, 
                     msg = message.as_string())
     server.quit()
     logger.info("Email successfully sent.")

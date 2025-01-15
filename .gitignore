@@ -1,0 +1,20 @@
+# Ignore sensitive files
+.env
+config.py
+
+# Ignore virtual environment directories
+venv/
+
+# Ignore Python test files
+
+# Ignore Python bytecode files
+__pycache__/
+*.pyc
+
+# Ignore pytest cache
+.pytest_cache/
+
+# Ignore logs
+logs/
+*.log
+

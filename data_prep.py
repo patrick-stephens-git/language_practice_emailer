@@ -1,17 +1,14 @@
-from dotenv import load_dotenv
-import os
 import pandas as pd
-import logging
+from config import sheet_id
+from utils.logging_config import setup_logging
 
 def get_words() -> tuple[str, str]:
     #####################################
     ## Logging:
-    logger = logging.getLogger(__name__)
+    logger = setup_logging()
     
     #####################################
     ## Get Sensitive Data:
-    load_dotenv('.env')
-    sheet_id: str = os.getenv("SHEET_ID")
     logger.info(f"Sheet ID: {sheet_id}")
     
     #####################################
