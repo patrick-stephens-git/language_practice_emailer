@@ -6,6 +6,7 @@ config.py
 venv/
 
 # Ignore Python test files
+tests/
 
 # Ignore Python bytecode files
 __pycache__/
