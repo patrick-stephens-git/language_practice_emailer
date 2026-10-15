@@ -18,4 +18,6 @@ sender_email_account: str = os.getenv("EMAIL_ACCOUNT")
 sender_email_password: str = os.getenv("EMAIL_PASSWORD")
 email_recipients: str =  os.getenv("EMAIL_RECIPIENTS")
 sheet_id: str =  os.getenv("SHEET_ID")
+sheet_gid: int = int(os.getenv("SHEET_GID", "0")) # tab (worksheet) id: the number after gid= in the sheet URL
+google_credentials_file: str = os.getenv("GOOGLE_CREDENTIALS_FILE", "service_account.json") # service account key; share the sheet with its client_email as Editor
 openai_api_key: str = os.getenv("OPENAI_API_KEY")

@@ -1,5 +1,5 @@
 import pandas as pd
-from config import sheet_id
+from sheets import get_worksheet
 from utils.logging_config import setup_logging
 
 def get_word() -> tuple[str, str, list[str]]:
@@ -8,13 +8,8 @@ def get_word() -> tuple[str, str, list[str]]:
     logger = setup_logging()
     
     #####################################
-    ## Get Sensitive Data:
-    logger.info(f"Sheet ID: {sheet_id}")
-    
-    #####################################
-    ## Read File:
-    input_url: str = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv"
-    df = pd.read_csv(input_url)
+    ## Read File (authenticated, so the sheet can stay private):
+    df = pd.DataFrame(get_worksheet().get_all_records()).replace("", pd.NA) # blank cells become NA
 
     #####################################
     ## Sanity Check Code:

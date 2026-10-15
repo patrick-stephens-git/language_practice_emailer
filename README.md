@@ -21,12 +21,14 @@ Language Practice Emailer is a Python project designed to help users practice a 
 1. Create an environment file `.env` in the project root directory with the following structure:
     ```
     SHEET_ID={google_sheet_id}
+    SHEET_GID={worksheet_tab_id}
     EMAIL_ACCOUNT={sending_email_address}
     EMAIL_PASSWORD={sending_email_password}
     EMAIL_RECIPIENTS={email_recipients}
     OPENAI_API_KEY={api_key}
     ```
-2. Customize the configuration file with your target country, target language, and focus variables
+2. Create a Google service account, download its JSON key as `service_account.json` in the project root, and share the sheet with the account's `client_email` as Editor. The sheet can stay private.
+3. Customize the configuration file with your target country, target language, and focus variables
 
 ## Usage
 Run the main script to start sending language practice emails.

@@ -3,6 +3,7 @@ from pull_data import get_word
 from generate_response import response_generation
 from synonym_filter import filter_known_synonyms
 from emailer import emailer
+from sheets import record_common
 from utils.logging_config import setup_logging
 
 ACTIVE_WINDOW_START: time = time(7, 0) # 7:00 AM local
@@ -19,6 +20,7 @@ def main() -> None:
     ai_translation, example_synonyms, example_sentence, word_country_match, is_common, where_to_hear = response_generation(sample_word) # Generate all AI responses
     example_synonyms = filter_known_synonyms(example_synonyms, all_words) # Python-only step: drop any LLM-generated synonyms already present in the spreadsheet
     emailer(sample_word, sample_translation, ai_translation, example_sentence, example_synonyms, word_country_match, is_common, where_to_hear) # Send the email
+    record_common(sample_word, is_common) # Tally the Common? Yes/No/Unsure answer in the spreadsheet; runs last so a sheet error can never block the email
 
 if __name__ == '__main__':
     main()

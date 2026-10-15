@@ -1,5 +1,6 @@
 # Ignore sensitive files
 .env
+service_account.json
 .DS_Store
 
 # Ignore virtual environment directories

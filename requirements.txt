@@ -4,6 +4,7 @@
 pandas
 python-dotenv
 openai
+gspread
 
 # Development dependencies
 pytest
