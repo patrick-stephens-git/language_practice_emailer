@@ -42,14 +42,15 @@ def response_generation(word: str) -> tuple[str, str, str, str, str, str]:
     call1_is_common: str = "Unsure"
     try:
         call1_response = client.chat.completions.create(
-            model="gpt-4o-mini", # fast and cost-effective; sufficient for structured factual JSON
+            model="gpt-6-luna", # efficient model for high-volume focused tasks; sufficient for structured factual JSON
+            reasoning_effort="none", # skip reasoning so hidden reasoning tokens don't consume the small completion limit
             messages=[
                 {"role": "system", "content": factual_system},
                 {"role": "user", "content": factual_user},
             ],
             response_format={"type": "json_object"}, # enforced so json.loads never receives free-form text
             temperature=1.2, # 0.0–2.0; higher value adds variety to responses
-            max_tokens=60, # Sufficient for small JSON object with short values
+            max_completion_tokens=60, # Sufficient for small JSON object with short values
         )
         call1_raw: str = call1_response.choices[0].message.content
         logger.info(f"Call 1 raw response: {call1_raw}")
@@ -68,14 +69,15 @@ def response_generation(word: str) -> tuple[str, str, str, str, str, str]:
     call2_is_common: str = "Unsure"
     try:
         call2_response = client.chat.completions.create(
-            model="gpt-4o-mini", # fast and cost-effective; sufficient for structured factual JSON
+            model="gpt-6-luna", # efficient model for high-volume focused tasks; sufficient for structured factual JSON
+            reasoning_effort="none", # skip reasoning so hidden reasoning tokens don't consume the small completion limit
             messages=[
                 {"role": "system", "content": factual_system},
                 {"role": "user", "content": factual_user},
             ],
             response_format={"type": "json_object"}, # enforced so json.loads never receives free-form text
             temperature=1.2, # 0.0–2.0; higher value adds variety to responses
-            max_tokens=60, # Sufficient for small JSON object with short values
+            max_completion_tokens=60, # Sufficient for small JSON object with short values
         )
         call2_raw: str = call2_response.choices[0].message.content
         logger.info(f"Call 2 raw response: {call2_raw}")
@@ -124,14 +126,15 @@ def response_generation(word: str) -> tuple[str, str, str, str, str, str]:
     example_sentence: str = "[unavailable]"
     try:
         call3_response = client.chat.completions.create(
-            model="gpt-4o-mini", # fast and cost-effective; sufficient for structured factual JSON
+            model="gpt-6-luna", # efficient model for high-volume focused tasks; sufficient for structured factual JSON
+            reasoning_effort="none", # skip reasoning so hidden reasoning tokens don't consume the small completion limit
             messages=[
                 {"role": "system", "content": generative_system},
                 {"role": "user", "content": generative_user},
             ],
             response_format={"type": "json_object"}, # enforced so json.loads never receives free-form text
             temperature=1.2, # 0.0–2.0; higher value adds variety to responses
-            max_tokens=160, # Sufficient for four fields including a full example sentence
+            max_completion_tokens=160, # Sufficient for four fields including a full example sentence
         )
         call3_raw: str = call3_response.choices[0].message.content
         logger.info(f"Call 3 raw response: {call3_raw}")
