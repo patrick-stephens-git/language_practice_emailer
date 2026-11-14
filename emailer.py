@@ -1,9 +1,10 @@
 from utils.logging_config import setup_logging
 from config import sender_email_account, sender_email_password, email_recipients, target_country
+import html
 import smtplib
 from email.mime.text import MIMEText
 
-def emailer(word: str, translation: str, ai_translation: str, example_sentence: str, example_synonyms: str, word_country_match: str, is_common: str, where_to_hear: str) -> None:
+def emailer(word: str, translation: str, ai_translation: str, example_sentence: str, example_synonyms: str, is_common: str, is_common_reason: str = "") -> None:
     #####################################
     ## Logging:
     logger = setup_logging()
@@ -30,8 +31,8 @@ def emailer(word: str, translation: str, ai_translation: str, example_sentence: 
     logger.info(f"Email subject line: {email_subject_line}")
 
     #####################################
-    ## Only include the country match sentence when the word isn't clearly common:
-    country_match_line: str = f"{word_country_match}<br>" if is_common.strip().lower() in ("no", "unsure") else ""
+    ## Show the model's reasoning under the Yes/No line (omitted when empty):
+    reason_line: str = f"Reason: {html.escape(is_common_reason)}<br>" if is_common_reason else ""
 
     #####################################
     ## Setup Email Body:
@@ -43,8 +44,7 @@ def emailer(word: str, translation: str, ai_translation: str, example_sentence: 
     Synonyms: {example_synonyms}<br>
     <br>
     Common in {target_country}? {is_common}<br>
-    {country_match_line} <br>
-    Where are you most likely to see or hear {word}? {where_to_hear}""" # Body shows the word, both translations, and contextual info
+    {reason_line}""" # Body shows the word, both translations, synonyms, and the commonality verdict with its reason
     logger.info(f"Email body: {email_body}")
 
     #####################################
@@ -76,8 +76,6 @@ if __name__ == '__main__':
     ai_translation: str = "to teach" # AI-generated translation
     example_sentence: str = "Me gusta enseñar español a mis amigos." # Example sentence
     example_synonyms: str = "instruir, educar, mostrar." # Example synonyms
-    word_country_match: str = "The word or phrase 'enseñar' is most common in all Spanish-speaking countries." # Country match sentence
     is_common: str = "Yes" # Commonality answer
-    where_to_hear: str = "You are most likely to hear it in classrooms and educational settings." # Where to hear answer
 
-    emailer(word, translation, ai_translation, example_sentence, example_synonyms, word_country_match, is_common, where_to_hear)
+    emailer(word, translation, ai_translation, example_sentence, example_synonyms, is_common, is_common_reason="Mexicans use this word naturally in everyday speech.")

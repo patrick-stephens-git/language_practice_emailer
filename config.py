@@ -1,9 +1,11 @@
 from dotenv import load_dotenv
 import os
 
-target_country: str = "Mexico City"
+target_country: str = "Mexico"
 target_language: str = "Spanish"
 student_primary_language: str = "English"
+
+common_confidence_threshold: float = 0.80 # Yes/No needs at least this probability on the is_common token; anything in between becomes Unsure
 
 focus_weight: float = 0.4 # probability a focus concept is applied; 0.0 disables focus entirely
 target_focus_list: list = ('subjunctive mood',)
