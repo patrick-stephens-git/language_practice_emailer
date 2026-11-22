@@ -1,8 +1,16 @@
 from utils.logging_config import setup_logging
-from config import sender_email_account, sender_email_password, email_recipients, target_country
+from config import sender_email_account, sender_email_password, email_recipients, target_country, web_app_url, link_secret
 import html
 import smtplib
 from email.mime.text import MIMEText
+from urllib.parse import urlencode
+
+def build_lookup_link(word: str) -> str:
+    """Return the HTML "I did not know this word" link, or "" when WEB_APP_URL is not configured."""
+    if not web_app_url:
+        return ""
+    query: str = urlencode({"key": link_secret, "word": word}) # urlencode percent-encodes the word (accents, spaces)
+    return f'<a href="{html.escape(web_app_url + "?" + query)}">I did not know this word</a>'
 
 def emailer(word: str, translation: str, ai_translation: str, example_sentence: str, example_synonyms: str, is_common: str, is_common_reason: str = "") -> None:
     #####################################
@@ -35,6 +43,11 @@ def emailer(word: str, translation: str, ai_translation: str, example_sentence: 
     reason_line: str = f"Reason: {html.escape(is_common_reason)}<br>" if is_common_reason else ""
 
     #####################################
+    ## Link that adds +1 to this word's Lookup Count when tapped (omitted when WEB_APP_URL is unset):
+    lookup_link: str = build_lookup_link(word)
+    lookup_line: str = f"<br>{lookup_link}<br>" if lookup_link else "" # blank line before the link
+
+    #####################################
     ## Setup Email Body:
     email_body: str = f"""
     Word or Phrase: {word}<br>
@@ -44,7 +57,7 @@ def emailer(word: str, translation: str, ai_translation: str, example_sentence: 
     Synonyms: {example_synonyms}<br>
     <br>
     Common in {target_country}? {is_common}<br>
-    {reason_line}""" # Body shows the word, both translations, synonyms, and the commonality verdict with its reason
+    {reason_line}{lookup_line}""" # Body shows the word, both translations, synonyms, the commonality verdict with its reason, and the lookup link
     logger.info(f"Email body: {email_body}")
 
     #####################################

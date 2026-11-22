@@ -26,9 +26,18 @@ Language Practice Emailer is a Python project designed to help users practice a 
     EMAIL_PASSWORD={sending_email_password}
     EMAIL_RECIPIENTS={email_recipients}
     OPENAI_API_KEY={api_key}
+    WEB_APP_URL={apps_script_web_app_exec_url}
+    LINK_SECRET={any_random_string}
     ```
 2. Create a Google service account, download its JSON key as `service_account.json` in the project root, and share the sheet with the account's `client_email` as Editor. The sheet can stay private.
 3. Customize the configuration file with your target country, target language, and focus variables
+4. (Optional) Enable the "I did not know this word" link at the end of each email. Tapping it adds +1 to that word's `Lookup Count`:
+    1. In the sheet, open Extensions > Apps Script and paste in `apps_script/Code.gs`.
+    2. Under Project Settings > Script Properties, add `LINK_SECRET` with the same value as in `.env`.
+    3. Set `SHEET_GID` at the top of `Code.gs` to your tab id (the number after `gid=` in the sheet URL).
+    4. Deploy > New deployment > Web app (Execute as: Me, Who has access: Anyone), then put the `/exec` URL in `.env` as `WEB_APP_URL`. After editing `Code.gs` later, redeploy with Manage deployments > New version.
+
+    Every tap adds +1. Without `WEB_APP_URL` the link is left out.
 
 ## Usage
 Run the main script to start sending language practice emails.

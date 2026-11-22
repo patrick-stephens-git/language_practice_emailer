@@ -23,3 +23,5 @@ sheet_id: str =  os.getenv("SHEET_ID")
 sheet_gid: int = int(os.getenv("SHEET_GID", "0")) # tab (worksheet) id: the number after gid= in the sheet URL
 google_credentials_file: str = os.getenv("GOOGLE_CREDENTIALS_FILE", "service_account.json") # service account key; share the sheet with its client_email as Editor
 openai_api_key: str = os.getenv("OPENAI_API_KEY")
+web_app_url: str = os.getenv("WEB_APP_URL") # Apps Script web app /exec URL; the "I did not know this word" link is omitted when unset
+link_secret: str = os.getenv("LINK_SECRET", "") # must match the LINK_SECRET script property in the Apps Script project
