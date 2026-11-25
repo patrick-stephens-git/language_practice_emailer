@@ -32,6 +32,8 @@ def get_word() -> tuple[str, str, list[str]]:
     sample_word = df_sample.iloc[0,0] # Get word
     logger.info(f"Word: {sample_word}")
     sample_translation = df_sample.iloc[0,1] # Get translation
+    if pd.isna(sample_translation):
+        sample_translation = "" # blank cell
     logger.info(f"Translation: {sample_translation}")
 
     #####################################

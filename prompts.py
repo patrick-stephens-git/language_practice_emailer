@@ -1,31 +1,25 @@
 from config import target_country, target_language, student_primary_language
 
 
-def factual_system_prompt() -> str:
+# The three target-country checks. Each is sent as its own request, with no system prompt, so no persona can bias the answer.
+def direct_prompt(word: str, translation: str) -> str:
     return f"""
-You are an expert {target_language} teacher and a native speaker from {target_country}.
-Answer questions about vocabulary usage concisely and accurately.
-Always respond with valid JSON only — no extra text, no markdown.
+Do people in {target_country} commonly say the word or phrase '{word}' to mean '{translation}'?
+Respond only with JSON: {{"answer": "Yes, No, or Unsure", "reason": "one short sentence in {student_primary_language}"}}
 """.strip()
 
 
-def factual_user_prompt(word: str) -> str:
+def reverse_prompt(translation: str) -> str:
     return f"""
-The student is learning the {target_language} word or phrase: '{word}'.
+What {target_language} words or phrases do people in {target_country} commonly say to mean '{translation}'? List up to 8. Keep phrases whole.
+Respond only with JSON: {{"words_or_phrases": ["..."]}}
+""".strip()
 
-Is '{word}' commonly used in {target_country}?
-Answer "Yes" only if a native {target_country} speaker would naturally say this word or phrase themselves in normal everyday speech.
-Any register counts: slang, colloquial, standard, or formal words that people still say out loud.
-Merely being understood is NOT enough.
-Answer "No" if native {target_country} speakers would normally choose a different word or phrase for the same meaning, if the word is mainly associated with other regions (for example Spain), if it is rare or archaic, or if it is understood there but not something people naturally say.
 
-Respond ONLY with a JSON object matching this exact schema, with the keys in this order:
-{{"reason": "...", "is_common": "..."}}
-
-"reason": one or two short sentences written in {student_primary_language}, weighing whether {target_country} speakers use this word themselves or associate it with another region. If you answer "No" because a different word is more typical, name that word.
-"is_common": exactly "Yes" or "No", consistent with your reason.
-
-Do NOT include any text outside the JSON object.
+def region_prompt(word: str, translation: str) -> str:
+    return f"""
+In which {target_language}-speaking countries do people commonly say the word or phrase '{word}' to mean '{translation}'?
+Respond only with JSON: {{"countries": ["country names in English"], "reason": "one short sentence in {student_primary_language}"}}
 """.strip()
 
 

@@ -5,8 +5,6 @@ target_country: str = "Mexico"
 target_language: str = "Spanish"
 student_primary_language: str = "English"
 
-common_confidence_threshold: float = 0.80 # Yes/No needs at least this probability on the is_common token; anything in between becomes Unsure
-
 focus_weight: float = 0.4 # probability a focus concept is applied; 0.0 disables focus entirely
 target_focus_list: list = ('subjunctive mood',)
 passive_se_weight: float = 0.3 # probability the example sentence uses passive se; 0.0 disables it

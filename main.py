@@ -17,7 +17,7 @@ def main() -> None:
 
     setup_logging() # Initialize logging
     sample_word, sample_translation, all_words = get_word() # Fetch a random word, its spreadsheet translation, and the full spreadsheet word list
-    ai_translation, example_synonyms, example_sentence, is_common, is_common_reason = response_generation(sample_word) # Generate all AI responses
+    ai_translation, example_synonyms, example_sentence, is_common, is_common_reason = response_generation(sample_word, sample_translation) # Generate all AI responses
     example_synonyms = filter_known_synonyms(example_synonyms, all_words) # Python-only step: drop any LLM-generated synonyms already present in the spreadsheet
     emailer(sample_word, sample_translation, ai_translation, example_sentence, example_synonyms, is_common, is_common_reason) # Send the email
     record_common(sample_word, is_common) # Tally the Common? Yes/No/Unsure answer in the spreadsheet; runs last so a sheet error can never block the email

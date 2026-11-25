@@ -39,7 +39,7 @@ def emailer(word: str, translation: str, ai_translation: str, example_sentence: 
     logger.info(f"Email subject line: {email_subject_line}")
 
     #####################################
-    ## Show the model's reasoning under the Yes/No line (omitted when empty):
+    ## Show the checks' reason under the Yes/No/Unsure line (omitted when empty):
     reason_line: str = f"Reason: {html.escape(is_common_reason)}<br>" if is_common_reason else ""
 
     #####################################
