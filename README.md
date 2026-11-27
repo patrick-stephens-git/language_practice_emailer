@@ -41,3 +41,17 @@ Language Practice Emailer is a Python project designed to help users practice a 
 
 ## Usage
 Run the main script to start sending language practice emails.
+
+## Logs
+Each run prints its progress to the terminal and writes it to `logs/app.log`: the picked word, the prompts, the AI responses, the check verdicts, the email send and the sheet update. Each trigger overwrites the file, so it holds the latest trigger only. Triggers outside the active window leave it untouched.
+
+To follow a run as it happens:
+```
+tail -f logs/app.log
+```
+
+When running from cron, also save the terminal output to a separate file. This catches errors that happen before logging starts, such as a failed import or a bad config value. The `logs` directory must already exist.
+```
+cd /path/to/language_practice_emailer && .venv/bin/python main.py > logs/cron.log 2>&1
+```
+`cron.log` is also overwritten on each trigger, including one skipped for being outside the active window.

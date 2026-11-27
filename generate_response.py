@@ -5,8 +5,9 @@ import openai
 import json
 import logging
 import random
-import re
 import unicodedata
+
+logger = logging.getLogger(__name__)
 
 
 def get_target_focus() -> str:
@@ -41,15 +42,17 @@ def match_list(items: list, target: str) -> str:
     return "Yes" if normalize(target) in {normalize(item) for item in items} else "No"
 
 
-def name_countries(reason: str, countries: list[str]) -> str:
-    """Swap "these countries" in the reason for the countries the model actually listed."""
+def build_reason(direct_reason: str, countries: list[str]) -> str:
+    """Return the Direct check's reason followed by a sentence naming the countries. Either part may be empty."""
+    if direct_reason and not direct_reason.endswith((".", "!", "?")):
+        direct_reason += "."
     if not countries:
-        return reason
+        return direct_reason
     names: str = countries[0] if len(countries) == 1 else f"{', '.join(countries[:-1])} and {countries[-1]}"
-    return re.sub(r"\bthese (?:(?:listed|Spanish-speaking) )?countries\b", lambda _: names, reason, flags=re.IGNORECASE)
+    return f"{direct_reason} People in {names} commonly use this word.".strip()
 
 
-def request_json(client: openai.OpenAI, prompt: str, logger: logging.Logger) -> dict:
+def request_json(client: openai.OpenAI, prompt: str) -> dict:
     logger.info(f"Check prompt: {prompt}")
     response = client.chat.completions.create(
         model="gpt-6-luna", # efficient model for high-volume focused tasks; sufficient for structured factual JSON
@@ -64,7 +67,7 @@ def request_json(client: openai.OpenAI, prompt: str, logger: logging.Logger) -> 
     return json.loads(raw)
 
 
-def check_common(client: openai.OpenAI, word: str, translation: str, logger: logging.Logger) -> tuple[str, str]:
+def check_common(client: openai.OpenAI, word: str, translation: str) -> tuple[str, str]:
     """Run the Direct, Reverse and Region checks. Returns (Yes / No / Unsure, reason)."""
     if not translation.strip(): # every prompt needs the meaning
         logger.error(f"No spreadsheet translation for '{word}'; checks skipped.")
@@ -78,29 +81,28 @@ def check_common(client: openai.OpenAI, word: str, translation: str, logger: log
     )
 
     results: list[str] = []
-    reasons: list[str] = []
+    direct_reason: str = ""
+    countries: list[str] = []
     for name, prompt, evaluate in checks:
         try: # each check fails on its own so the others still run and the email is never blocked
-            data: dict = request_json(client, prompt, logger)
+            data: dict = request_json(client, prompt)
             result: str = evaluate(data)
-            reason: str = str(data.get("reason") or "").strip() # Reverse returns no reason
-            reason = name_countries(reason, data.get("countries", [])) # only Region returns a country list
-            if reason:
-                reasons.append(reason if reason.endswith((".", "!", "?")) else f"{reason}.")
+            if name == "Direct":
+                direct_reason = str(data.get("reason") or "").strip()
+            elif name == "Region":
+                countries = data["countries"] # already validated by match_list
         except Exception as e:
-            logger.error(f"{name} check failed: {e}")
+            logger.exception(f"{name} check failed: {e}")
             result = "Failed"
         logger.info(f"{name} check result: {result}")
         results.append(result)
 
     verdict: str = results[0] if len(set(results)) == 1 and results[0] in ("Yes", "No") else "Unsure"
     logger.info(f"Common check verdict: {verdict}")
-    return verdict, " ".join(reasons)
+    return verdict, build_reason(direct_reason, countries)
 
 
 def response_generation(word: str, translation: str) -> tuple[str, str, str, str, str]:
-    logger = setup_logging()
-
     use_passive_se: bool = random.random() < passive_se_weight
     sample_sentence_subject: str | None = None if use_passive_se else get_sample_sentence_subject()
     sample_verb_tense: str = get_verb_tense() # sampled before the generative call
@@ -110,7 +112,7 @@ def response_generation(word: str, translation: str) -> tuple[str, str, str, str
     ###############################################
     # Common-in-target-country checks: Direct, Reverse and Region, one request each (deterministic)
     ###############################################
-    is_common, is_common_reason = check_common(client, word, translation, logger)
+    is_common, is_common_reason = check_common(client, word, translation)
 
     ###############################################
     # Generative request: translation, synonyms, sample_sentence
@@ -126,6 +128,7 @@ def response_generation(word: str, translation: str) -> tuple[str, str, str, str
         apply_focus=apply_focus,
         use_passive_se=use_passive_se,
     )
+    logger.info(f"Sentence settings: passive se={use_passive_se}, subject={sample_sentence_subject}, verb tense={sample_verb_tense}, focus={target_focus if apply_focus else None}")
     logger.info(f"Generative user prompt: {generative_user}")
 
     ai_translation: str = "[unavailable]"
@@ -149,12 +152,16 @@ def response_generation(word: str, translation: str) -> tuple[str, str, str, str
         ai_translation = str(generative_data.get("translation", "[unavailable]")).strip()
         example_synonyms = str(generative_data.get("synonyms", "[unavailable]")).strip()
         example_sentence = str(generative_data.get("sample_sentence", "[unavailable]")).strip()
+        logger.info(f"AI translation: {ai_translation}")
+        logger.info(f"AI synonyms: {example_synonyms}")
+        logger.info(f"AI sample sentence: {example_sentence}")
     except json.JSONDecodeError as e:
-        logger.error(f"Generative JSON parse error: {e}")
+        logger.exception(f"Generative JSON parse error: {e}")
 
     return ai_translation, example_synonyms, example_sentence, is_common, is_common_reason # order must match the tuple signature expected by main.py
 
 if __name__ == '__main__':
+    setup_logging()
     # word: str = "coger"
     # word: str = "ordenador"
     # word: str = "patata"

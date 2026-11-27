@@ -4,6 +4,9 @@ import html
 import smtplib
 from email.mime.text import MIMEText
 from urllib.parse import urlencode
+import logging
+
+logger = logging.getLogger(__name__)
 
 def build_lookup_link(word: str) -> str:
     """Return the HTML "I did not know this word" link, or "" when WEB_APP_URL is not configured."""
@@ -12,26 +15,19 @@ def build_lookup_link(word: str) -> str:
     query: str = urlencode({"key": link_secret, "word": word}) # urlencode percent-encodes the word (accents, spaces)
     return f'<a href="{html.escape(web_app_url + "?" + query)}">I did not know this word</a>'
 
-def emailer(word: str, translation: str, ai_translation: str, example_sentence: str, example_synonyms: str, is_common: str, is_common_reason: str = "") -> None:
+def emailer(word: str, translation: str, ai_translation: str, example_sentence: str, example_synonyms: str, is_common: str, is_common_reason: str = "") -> bool:
+    """Send the practice email. Returns False when it is skipped because settings are missing."""
     #####################################
-    ## Logging:
-    logger = setup_logging()
+    ## Check for empty variables; if any are empty then skip the email:
+    required: dict[str, str] = {"sender_email_account": sender_email_account, "sender_email_password": sender_email_password, "email_recipients": email_recipients}
+    missing: list[str] = [name for name, value in required.items() if not value]
+    if missing:
+        logger.error(f"Missing the following email authentication variables: {missing}")
+        return False
 
     #####################################
     ## Setup Recipients:
     recipients: list[str] = email_recipients.split(",") # Convert email_recipients string to a list
-
-    #####################################
-    ## Check for empty variables; if empty then fail, else continue:
-    try:
-        empty_vars = [var_name for var_name, var in [("sender_email_account", sender_email_account), ("sender_email_password", sender_email_password), ("email_recipients", email_recipients)] if not var] # Collect names of any missing auth variables
-        if empty_vars:
-            raise ValueError(f"Fail: Missing the following email authentication variables: {empty_vars}") # Raise error listing missing variables
-        else:
-            logger.info("Pass: All email authentication variables exist.")
-    except ValueError as e:
-        logger.error(e) # Log the error message
-        return
 
     #####################################
     ## Setup Subject Line:
@@ -58,7 +54,6 @@ def emailer(word: str, translation: str, ai_translation: str, example_sentence: 
     <br>
     Common in {target_country}? {is_common}<br>
     {reason_line}{lookup_line}""" # Body shows the word, both translations, synonyms, the commonality verdict with its reason, and the lookup link
-    logger.info(f"Email body: {email_body}")
 
     #####################################
     ## Email configuration:
@@ -77,13 +72,16 @@ def emailer(word: str, translation: str, ai_translation: str, example_sentence: 
 
     #####################################
     ## Send Email:
+    logger.info(f"Sending email to {len(recipients)} recipient(s).")
     server.sendmail(from_addr = sender_email_account,
                     to_addrs = recipients,
                     msg = message.as_string()) # Send the email
     server.quit() # Close the SMTP connection
     logger.info("Email successfully sent.")
+    return True
 
 if __name__ == '__main__':
+    setup_logging()
     word: str = "enseñar" # Target language word
     translation: str = "to teach, to show" # Spreadsheet translation
     ai_translation: str = "to teach" # AI-generated translation
@@ -91,4 +89,4 @@ if __name__ == '__main__':
     example_synonyms: str = "instruir, educar, mostrar." # Example synonyms
     is_common: str = "Yes" # Commonality answer
 
-    emailer(word, translation, ai_translation, example_sentence, example_synonyms, is_common, is_common_reason="Mexicans use this word naturally in everyday speech.")
+    emailer(word, translation, ai_translation, example_sentence, example_synonyms, is_common, is_common_reason="This is the everyday word for it. People in Mexico, Colombia and Peru commonly use this word.")

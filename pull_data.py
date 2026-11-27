@@ -1,44 +1,29 @@
+import logging
 import pandas as pd
 from sheets import get_worksheet
 from utils.logging_config import setup_logging
 
+logger = logging.getLogger(__name__)
+
 def get_word() -> tuple[str, str, list[str]]:
-    #####################################
-    ## Logging:
-    logger = setup_logging()
-    
     #####################################
     ## Read File (authenticated, so the sheet can stay private):
     df = pd.DataFrame(get_worksheet().get_all_records()).replace("", pd.NA) # blank cells become NA
 
-    #####################################
-    ## Sanity Check Code:
-    df_head = df.head()
-    logger.info(f"DataFrame head after import:\n{df_head}")
-    num_rows = len(df)
-    logger.info(f"How many rows in df: {num_rows}")
-    num_unique_words = df["Word"].nunique() # Get count of unique words in the dataframe
-    logger.info(f"How many unique words in df: {num_unique_words}")
-    
+    logger.info(f"How many rows in df: {len(df)}")
+    logger.info(f"How many unique words in df: {df['Word'].nunique()}")
+
     #####################################
     ## Data Prep:
     all_words: list[str] = df["Word"].dropna().unique().tolist() # Full word list captured before Lookup Count expansion, used later to filter LLM-generated synonyms already in the spreadsheet
     df = df.loc[df.index.repeat(df["Lookup Count"])] # Expand count of rows by the number in the "Lookup Count" column so that it's more likely to send words that are often reviewed (words looked up once still get a single entry)
-    df = df.drop(columns=["Lookup Count"]) # Drop the "Lookup Count" column
-    df = df.sample(frac=1).reset_index(drop=True) # Shuffle the dataframe
-    df_head = df.head()
-    logger.info(f"DataFrame head after shuffle:\n{df_head}")
-    df_sample = df.sample(n=1) # Randomly select 1 row in the dataframe
-    sample_word = df_sample.iloc[0,0] # Get word
+    row = df.sample(n=1).iloc[0] # Randomly select 1 row
+    sample_word: str = row["Word"]
+    sample_translation: str = "" if pd.isna(row["Translation"]) else row["Translation"] # blank cell
     logger.info(f"Word: {sample_word}")
-    sample_translation = df_sample.iloc[0,1] # Get translation
-    if pd.isna(sample_translation):
-        sample_translation = "" # blank cell
     logger.info(f"Translation: {sample_translation}")
-
-    #####################################
-    logger.info("Word & translation successfully collected.")
     return sample_word, sample_translation, all_words
 
 if __name__ == '__main__':
-    sample_word, sample_translation, all_words = get_word()
+    setup_logging()
+    get_word()

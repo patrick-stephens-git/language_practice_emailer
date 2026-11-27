@@ -19,7 +19,7 @@ Respond only with JSON: {{"words_or_phrases": ["..."]}}
 def region_prompt(word: str, translation: str) -> str:
     return f"""
 In which {target_language}-speaking countries do people commonly say the word or phrase '{word}' to mean '{translation}'?
-Respond only with JSON: {{"countries": ["country names in English"], "reason": "one short sentence in {student_primary_language}"}}
+Respond only with JSON: {{"countries": ["country names in English"]}}
 """.strip()
 
 

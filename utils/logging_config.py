@@ -1,26 +1,20 @@
 import logging
-import os
+import sys
+from pathlib import Path
 
-def setup_logging() -> logging.Logger:
-    os.makedirs('logs', exist_ok=True) # ensure that the logs directory exists
+LOG_DIR: Path = Path(__file__).resolve().parent.parent / "logs" # anchored to the project directory, not the current working directory
+
+def setup_logging() -> None:
+    """Send INFO and above to logs/app.log and the terminal. Call once, from an entry point."""
+    LOG_DIR.mkdir(exist_ok=True) # ensure that the logs directory exists
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s: %(name)s - %(levelname)s - %(message)s (Line: %(lineno)d [%(filename)s])",
         datefmt="%d/%m/%Y %H:%M:%S",
-        filename=os.path.join('logs', 'app.log'),  # Save log file inside the 'logs' directory
-        filemode="w",
-        encoding="utf-8"
+        handlers=[
+            logging.FileHandler(LOG_DIR / "app.log", mode="w", encoding="utf-8"), # only the latest trigger is kept
+            logging.StreamHandler(sys.stdout),
+        ],
     )
-
-    logger = logging.getLogger(__name__)
-    return logger
-
-if __name__ == '__main__':
-    logger = setup_logging()
-    logger.debug("This is a debug message.")
-    logger.info("This is an informational message.")
-    logger.warning("This is a warning message.")
-    logger.error("This is an error message.")
-    logger.critical("This is a critical message.")
-
-
+    for noisy_logger in ("httpx", "httpx2"): # hide the one-line-per-request HTTP messages
+        logging.getLogger(noisy_logger).setLevel(logging.WARNING)
